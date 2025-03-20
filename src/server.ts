@@ -10,18 +10,15 @@ interface IBlog {
   content: string;
   likes: string[];
   comments: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const app = express();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://blog-post-phi-seven.vercel.app/",
-    ], // Replace with your frontend URL
+    origin: ["http://localhost:3000", "https://blog-post-phi-seven.vercel.app"],
     methods: ["GET", "POST"],
   })
 );
@@ -30,10 +27,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "https://blog-post-phi-seven.vercel.app/",
-    ],
+    origin: ["http://localhost:3000", "https://blog-post-phi-seven.vercel.app"],
     methods: ["GET", "POST"],
   },
 });
@@ -41,7 +35,7 @@ const io = new Server(httpServer, {
 io.on("connection", (socket: Socket) => {
   console.log("New client connected", socket.id);
   socket.on("new-blog", (blog: IBlog) => {
-    socket.broadcast.emit("new-blog", blog);
+    io.emit("new-blog", blog);
   });
 });
 
