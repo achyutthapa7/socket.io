@@ -14,6 +14,18 @@ interface IBlog {
   updatedAt?: Date;
 }
 
+interface IComment {
+  _id: string;
+  userId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
+  postedBlogId: string;
+  commentText: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 const app = express();
 
 app.use(
@@ -36,6 +48,22 @@ io.on("connection", (socket: Socket) => {
   console.log("New client connected", socket.id);
   socket.on("new-blog", (blog: IBlog) => {
     io.emit("new-blog", blog);
+  });
+
+  socket.on("add-comment", (comment: IComment) => {
+    io.emit("add-comment", comment);
+  });
+
+  socket.on("delete-comment", (res) => {
+    io.emit("delete-comment", res.payload);
+  });
+
+  socket.on("like-blog", (res) => {
+    io.emit("like-blog", res);
+  });
+  socket.on("unlike-blog", (res) => {
+    // console.log("unlike-blog:", res);
+    io.emit("unlike-blog", res);
   });
 });
 
