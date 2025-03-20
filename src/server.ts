@@ -1,7 +1,18 @@
 import express from "express";
 import { createServer } from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import cors from "cors";
+
+interface IBlog {
+  _id: string;
+  userId: string;
+  title: string;
+  content: string;
+  likes: string[];
+  comments: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const app = express();
 
@@ -27,10 +38,9 @@ const io = new Server(httpServer, {
   },
 });
 
-io.on("connection", (socket) => {
+io.on("connection", (socket: Socket) => {
   console.log("New client connected", socket.id);
-  socket.on("new-blog", (blog) => {
-    console.log("New blog added:", blog);
+  socket.on("new-blog", (blog: IBlog) => {
     socket.broadcast.emit("new-blog", blog);
   });
 });
