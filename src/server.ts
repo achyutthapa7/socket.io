@@ -44,8 +44,14 @@ const io = new Server(httpServer, {
   },
 });
 
+const onlineUsers = new Map<string, string>();
 io.on("connection", (socket: Socket) => {
-  console.log("New client connected", socket.id);
+  socket.on("join", (userId: string) => {
+    onlineUsers.set(userId, socket.id);
+    console.log(onlineUsers);
+    console.log(`User ${userId} added with socket ${socket.id}`);
+  });
+
   socket.on("new-blog", (blog: IBlog) => {
     io.emit("new-blog", blog);
   });
@@ -62,8 +68,25 @@ io.on("connection", (socket: Socket) => {
     io.emit("like-blog", res);
   });
   socket.on("unlike-blog", (res) => {
-    // console.log("unlike-blog:", res);
     io.emit("unlike-blog", res);
+  });
+
+  socket.on("notification", (notification) => {
+    if (!notification) return;
+    const { receiverId } = notification;
+    if (!receiverId || !receiverId._id) {
+      console.log("Receiver ID is missing in the notification.");
+      return;
+    }
+    const receiverSocketId = onlineUsers.get(receiverId._id);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("notification", notification);
+      console.log(`Notification sent to ${receiverId._id}`);
+    } else {
+      console.log(
+        `User ${receiverId._id} is offline. Cannot send notification.`
+      );
+    }
   });
 });
 
